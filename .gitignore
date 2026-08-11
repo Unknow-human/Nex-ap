@@ -1,0 +1,52 @@
+# === Dépendances ===
+node_modules/
+
+# === Expo ===
+.expo/
+dist/
+web-build/
+expo-env.d.ts
+
+# === Native générés par `expo prebuild` (workflow managé) ===
+# Si tu es passé en workflow "bare" et que tu modifies le code natif à la
+# main, retire ces deux lignes pour les committer.
+/ios/
+/android/
+
+# === Variables d'environnement — NE JAMAIS COMMITTER (clés secrètes) ===
+.env
+.env.local
+.env*.local
+
+# === EAS / identifiants de signature — NE JAMAIS COMMITTER ===
+credentials.json
+*.keystore
+*.jks
+*.p8
+*.p12
+*.mobileprovision
+*.orig.*
+
+# === macOS ===
+.DS_Store
+*.pem
+
+# === Logs & debug ===
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+*.log
+
+# === Tests ===
+coverage/
+
+# === TypeScript ===
+*.tsbuildinfo
+
+# === Éditeurs ===
+.vscode/
+.idea/
+
+# === Divers ===
+*.orig
+.metro-health-check*
