@@ -57,12 +57,7 @@
       "fallbackToCacheTimeout": 0,
       "url": "https://u.expo.dev/09e58e39-ec30-413a-87dc-489dda0aa36a"
     },
-    "extra": {
-      "EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID": "837149139490-scku7m8ueauh7d4gb9l0qo5722u3ma3r.apps.googleusercontent.com",
-      "eas": {
-        "projectId": "3ae9bdc8-4798-48ac-8014-4eebade24d54"
-      }
-    },
+
     "owner": "nexarena"
   }
 }
