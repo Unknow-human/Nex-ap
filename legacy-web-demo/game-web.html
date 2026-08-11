@@ -660,7 +660,7 @@
         // le reste (remplace le setTimeout(init, 1000) qui devinait
         // simplement que Firebase serait prêt après 1s)
         async function bootstrap() {
-            if (SUPABASE_ANON_KEY === 'REMPLACE_PAR_TA_CLE_ANON_SUPABASE') {
+            if (SUPABASE_ANON_KEY === 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVwdmxrcGFxYW9zaXZjamNsenRtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU2NTExMzgsImV4cCI6MjEwMTIyNzEzOH0.H6OEqhN3SkNxbgryY_Fn6CfssOz-SsQwIVJqmoH24sE') {
                 statusEl.textContent = '⚠️ Configurer SUPABASE_ANON_KEY dans le code';
                 console.error('⚠️ Renseigne ta clé "anon public" Supabase (Project Settings > API) dans SUPABASE_ANON_KEY avant de déployer ce fichier.');
                 return;
