@@ -1,0 +1,68 @@
+{
+  "expo": {
+    "name": "NEXUS-ARENA",
+    "scheme": "nexus-arena",
+    "slug": "nexus-arena",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/Nex-Arena.png",
+    "userInterfaceStyle": "dark",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/Nex-Arena.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0a0a1a"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.nexusarena.app",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      },
+      "runtimeVersion": {
+        "policy": "appVersion"
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/Nex-Arena.png",
+        "backgroundColor": "#0a0a1a"
+      },
+      "package": "nexus.renosd",
+      "runtimeVersion": "1.0.0",
+      "versionCode": 16,
+      "permissions": [
+        "android.permission.RECORD_AUDIO",
+        "android.permission.MODIFY_AUDIO_SETTINGS"
+      ]
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      [
+        "expo-av",
+        {
+          "microphonePermission": "Nous avons besoin d'accès au microphone pour les messages vocaux"
+        }
+      ],
+      "expo-secure-store"
+    ],
+    "updates": {
+      "enabled": true,
+      "checkAutomatically": "ON_LOAD",
+      "fallbackToCacheTimeout": 0,
+      "url": "https://u.expo.dev/09e58e39-ec30-413a-87dc-489dda0aa36a"
+    },
+    "extra": {
+      "EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID": "837149139490-scku7m8ueauh7d4gb9l0qo5722u3ma3r.apps.googleusercontent.com",
+      "eas": {
+        "projectId": "3ae9bdc8-4798-48ac-8014-4eebade24d54"
+      }
+    },
+    "owner": "nexarena"
+  }
+}

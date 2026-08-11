@@ -1,0 +1,54 @@
+# EAS Build Ignore List
+# Files and directories that should not be uploaded to EAS Build servers
+
+# node_modules will be installed on the server
+node_modules/
+
+# Build artifacts
+build/
+dist/
+.expo/
+.next/
+
+# Temporary files
+*.log
+*.tmp
+.DS_Store
+Thumbs.db
+
+# Editor configuration (will be set on server)
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Git files (not needed for build)
+.git/
+.gitignore
+
+# Documentation (not needed for build)
+*.md
+docs/
+
+# Test files (optional)
+__tests__/
+*.test.js
+*.test.ts
+
+# Environment (will use EAS secrets)
+.env
+.env.local.backup
+.env.*.local.backup
+
+# Android gradle cache (will be regenerated)
+android/.gradle/
+android/build/
+
+# iOS build cache (will be regenerated)
+ios/Pods/
+ios/build/
+
+# Gradle wrapper will be created by EAS
+# (Uncomment if you want to send your own gradlew)
+# android/gradlew
+# android/gradlew.bat

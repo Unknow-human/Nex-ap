@@ -1,0 +1,32 @@
+services:
+  # Sert la vraie application (React Native Web), avec toutes les
+  # fonctionnalités du jeu — chat, arène, connexion, arrière-plans, etc.
+  # C'est cette URL que l'APK charge dans sa WebView (voir
+  # src/screens/WebAppScreen.tsx) : il est donc essentiel qu'elle serve le
+  # vrai jeu et non une page de démonstration séparée.
+  #
+  # Avant ce correctif, ce service buildait un projet Next.js distinct
+  # (landing-page/web, avec des variables Firebase — un reliquat d'avant
+  # la migration vers Supabase) et y injectait une démo HTML simplifiée.
+  # Si tu veux garder une page marketing séparée en plus du vrai jeu,
+  # dis-le moi : on peut la remettre sur un autre service/sous-domaine
+  # (ex: nexus-landing) pendant que celui-ci sert l'app complète.
+  - type: static
+    name: nexus-landing
+    env: static
+    branch: main
+    buildCommand: npm ci && npx expo export --platform web
+    publishPath: dist
+    healthCheckPath: /
+    envVars:
+      - key: EXPO_PUBLIC_SUPABASE_URL
+      - key: EXPO_PUBLIC_SUPABASE_ANON_KEY
+      - key: EXPO_PUBLIC_APP_VERSION
+      - key: EXPO_PUBLIC_EAS_PROJECT_ID
+      - key: EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID
+    routes:
+      # SPA : toute route inconnue retombe sur index.html (navigation
+      # React Navigation côté client, pas de vraies pages serveur).
+      - type: rewrite
+        source: /*
+        destination: /index.html

@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEXUS ARENA - Jeu Web v1.0.1 COMPLET</title>
+    <!-- Supabase JS SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #050510 0%, #0a0a1a 100%);
+            color: #e0e0e0;
+            overflow-x: hidden;
+        }
+
+        .app-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        header {
+            background: rgba(10, 10, 26, 0.9);
+            border-bottom: 2px solid #00f2ff;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #00f2ff, #ffa502);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .main-content {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+        }
+
+        .game-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            overflow-y: auto;
+        }
+
+        .chat-area {
+            width: 300px;
+            background: rgba(10, 10, 26, 0.8);
+            border-left: 2px solid #00f2ff;
+            display: flex;
+            flex-direction: column;
+            padding: 1rem;
+            overflow: hidden;
+        }
+
+        .game-board {
+            background: rgba(0, 242, 255, 0.1);
+            border: 2px solid #00f2ff;
+            border-radius: 10px;
+            padding: 2rem;
+            width: 100%;
+            max-width: 500px;
+            text-align: center;
+        }
+
+        .game-title {
+            color: #00f2ff;
+            font-size: 2rem;
+            font-weight: 800;
+            margin-bottom: 1.5rem;
+        }
+
+        .section {
+            margin: 1.5rem 0;
+            padding: 1rem;
+            border-radius: 8px;
+            background: rgba(0, 242, 255, 0.05);
+        }
+
+        .section-title {
+            color: #00f2ff;
+            font-weight: 600;
+            margin-bottom: 0.8rem;
+            font-size: 0.95rem;
+        }
+
+        input {
+            width: 100%;
+            padding: 0.6rem;
+            margin: 0.5rem 0;
+            background: rgba(0, 242, 255, 0.1);
+            border: 1px solid #00f2ff;
+            color: #e0e0e0;
+            border-radius: 4px;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        input::placeholder {
+            color: #b0b0b0;
+        }
+
+        .options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 0.8rem;
+            margin: 0.8rem 0;
+        }
+
+        .option-btn {
+            padding: 0.8rem;
+            background: rgba(0, 242, 255, 0.1);
+            border: 2px solid #00f2ff;
+            color: #00f2ff;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .option-btn:hover {
+            background: rgba(0, 242, 255, 0.2);
+        }
+
+        .option-btn.active {
+            background: #00f2ff;
+            color: #050510;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin: 1.5rem 0;
+        }
+
+        .btn {
+            padding: 0.8rem 1.5rem;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #00f2ff, #00a8cc);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(0, 242, 255, 0.4);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: #00f2ff;
+            border: 2px solid #00f2ff;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(0, 242, 255, 0.1);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            margin-bottom: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .message {
+            background: rgba(0, 242, 255, 0.1);
+            border-left: 3px solid #00f2ff;
+            padding: 0.75rem;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            word-break: break-word;
+        }
+
+        .message-author {
+            color: #00f2ff;
+            font-weight: 600;
+            font-size: 0.8rem;
+        }
+
+        .chat-input {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .chat-input input {
+            flex: 1;
+            margin: 0;
+        }
+
+        .chat-input button {
+            background: #00f2ff;
+            color: #050510;
+            border: none;
+            padding: 0.6rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .status {
+            text-align: center;
+            padding: 1rem;
+            color: #b0b0b0;
+            font-size: 0.9rem;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 200;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: rgba(10, 10, 26, 0.95);
+            border: 2px solid #00f2ff;
+            border-radius: 10px;
+            padding: 2rem;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        .record-item {
+            background: rgba(0, 242, 255, 0.1);
+            padding: 0.8rem;
+            margin: 0.5rem 0;
+            border-left: 3px solid #ffa502;
+            text-align: left;
+            border-radius: 4px;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                flex-direction: column;
+            }
+
+            .chat-area {
+                width: 100%;
+                border-left: none;
+                border-top: 2px solid #00f2ff;
+                max-height: 150px;
+            }
+
+            .game-board {
+                max-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <header>
+            <div class="logo">⚡ NEXUS ARENA v1.0.1</div>
+            <div id="status" style="font-size: 0.9rem; color: #b0b0b0;">Initialisation...</div>
+        </header>
+
+        <div class="main-content">
+            <div class="game-area">
+                <div class="game-board" id="gameBoard">
+                    <div class="game-title">NEXUS ARENA</div>
+                    
+                    <!-- ECRAN 1: NOM JOUEUR -->
+                    <div id="screen-name" class="section">
+                        <div class="section-title">👤 ENTREZ VOTRE NOM</div>
+                        <input type="text" id="playerNameInput" placeholder="Votre nom d'agent..." maxlength="20">
+                        <div class="buttons">
+                            <button class="btn btn-primary" onclick="startGame()">Continuer</button>
+                        </div>
+                    </div>
+
+                    <!-- ECRAN 2: SELECTION MODE -->
+                    <div id="screen-mode" class="section" style="display: none;">
+                        <div class="section-title">🎮 CHOISIR LE MODE</div>
+                        <div class="options">
+                            <button class="option-btn active" onclick="selectMode('SOLO')">SOLO</button>
+                            <button class="option-btn" onclick="selectMode('MULTI')">MULTI</button>
+                        </div>
+                        <div class="buttons">
+                            <button class="btn btn-primary" onclick="confirmMode()">Confirmer</button>
+                        </div>
+                    </div>
+
+                    <!-- ECRAN 3: SELECTION DIFFICULTE -->
+                    <div id="screen-difficulty" class="section" style="display: none;">
+                        <div class="section-title">⚡ CHOISIR DIFFICULTÉ</div>
+                        <div class="options">
+                            <button class="option-btn active" onclick="selectDifficulty('BEGINNER')">FACILE</button>
+                            <button class="option-btn" onclick="selectDifficulty('NORMAL')">NORMAL</button>
+                            <button class="option-btn" onclick="selectDifficulty('HARD')">DIFFICILE</button>
+                            <button class="option-btn" onclick="selectDifficulty('NIGHTMARE')">CAUCHEMAR</button>
+                        </div>
+                        <div class="buttons">
+                            <button class="btn btn-primary" onclick="startGameplay()">Démarrer</button>
+                        </div>
+                    </div>
+
+                    <!-- ECRAN 4: MULTI - CREATION ARENE -->
+                    <div id="screen-create-arena" class="section" style="display: none;">
+                        <div class="section-title">⚔️ CRÉER UNE ARÈNE</div>
+                        <input type="text" id="arenaPlayerName" placeholder="Votre nom..." value="">
+                        <div class="buttons">
+                            <button class="btn btn-primary" onclick="createArena()">Créer l'arène</button>
+                            <button class="btn btn-secondary" onclick="showJoinArena()">Rejoindre</button>
+                        </div>
+                    </div>
+
+                    <!-- ECRAN 5: SALLE D'ATTENTE -->
+                    <div id="screen-waiting-room" class="section" style="display: none;">
+                        <div class="section-title">⏳ SALLE D'ATTENTE</div>
+                        <div class="game-code" id="arenaCodeDisplay"></div>
+                        <p id="playersCount" style="color: #00f2ff; margin: 1rem 0;">En attente du 2e joueur...</p>
+                        <button class="btn btn-secondary" onclick="copyArenaCode()">Copier le code</button>
+                    </div>
+
+                    <!-- ECRAN 6: REJOINDRE ARENE -->
+                    <div id="screen-join-arena" class="section" style="display: none;">
+                        <div class="section-title">🔓 REJOINDRE UNE ARÈNE</div>
+                        <input type="text" id="arenaCodeInput" placeholder="Code d'arène..." maxlength="10">
+                        <input type="text" id="joinPlayerName" placeholder="Votre nom..." value="">
+                        <div class="buttons">
+                            <button class="btn btn-primary" onclick="joinArena()">Rejoindre</button>
+                            <button class="btn btn-secondary" onclick="screenManager.show('create-arena')">Créer</button>
+                        </div>
+                    </div>
+
+                    <!-- ECRAN 7: JEU -->
+                    <div id="screen-gameplay" class="section" style="display: none;">
+                        <div class="section-title">🎯 MASTERMIND - Devinez le code!</div>
+                        <input type="text" id="codeGuess" placeholder="Entrez 4 chiffres (0-9)..." maxlength="4">
+                        <button class="btn btn-primary" onclick="submitGuess()" style="margin-top: 1rem;">Valider</button>
+                        <div id="gameLog" style="text-align: left; margin-top: 1rem; max-height: 150px; overflow-y: auto;"></div>
+                    </div>
+
+                    <!-- ECRAN 8: CLASSEMENT -->
+                    <div id="screen-records" class="section" style="display: none;">
+                        <div class="section-title">🏆 CLASSEMENT MONDIAL</div>
+                        <div id="recordsList" style="text-align: left; max-height: 200px; overflow-y: auto;"></div>
+                        <div class="buttons">
+                            <button class="btn btn-primary" onclick="screenManager.show('mode')">Retour</button>
+                        </div>
+                    </div>
+
+                    <div class="status" id="gameStatus">Connecté à Supabase ✅</div>
+                </div>
+            </div>
+
+            <div class="chat-area">
+                <h3 style="margin-bottom: 1rem; color: #00f2ff;">💬 Chat</h3>
+                <div class="chat-messages" id="chatMessages"></div>
+                <div class="chat-input">
+                    <input type="text" id="messageInput" placeholder="Message...">
+                    <button id="sendBtn">Envoyer</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ============= CONFIGURATION SUPABASE =============
+        // (remplace la config Firebase — voir game-web.html pour le
+        // détail des correspondances de schéma)
+        const SUPABASE_URL = 'https://epvlkpaqaosivcjclztm.supabase.co';
+        // ⚠️ À REMPLACER : Project Settings > API > "anon public" key.
+        const SUPABASE_ANON_KEY = 'REMPLACE_PAR_TA_CLE_ANON_SUPABASE';
+        const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // ============= APP STATE =============
+        const APP_VERSION = '1.0.1';
+        const PLATFORM = 'web';
+        let playerName = '';
+        let currentMode = 'SOLO';
+        let currentDifficulty = 'NORMAL';
+        let currentUserId = null;
+        let currentArenaId = null;
+        let secretCode = '';
+        let attempts = [];
+
+        function escapeHtml(str) {
+            const div = document.createElement('div');
+            div.textContent = str ?? '';
+            return div.innerHTML;
+        }
+
+        // ============= SCREEN MANAGER =============
+        const screenManager = {
+            show: function(screenName) {
+                document.querySelectorAll('[id^="screen-"]').forEach(el => el.style.display = 'none');
+                const screen = document.getElementById(`screen-${screenName}`);
+                if (screen) screen.style.display = 'block';
+            }
+        };
+
+        // ============= AUTH =============
+        // ⚠️ Nécessite que l'auth anonyme soit activée côté Supabase
+        // (Dashboard > Authentication > Providers > Anonymous).
+        async function initAuth() {
+            const { data, error } = await sb.auth.signInAnonymously();
+            if (error) {
+                console.error('❌ Auth error:', error);
+                return;
+            }
+            currentUserId = data.user.id;
+            console.log('✅ Auth anonyme:', currentUserId.substring(0, 10) + '...');
+        }
+
+        // ============= GAME FUNCTIONS =============
+        function startGame() {
+            playerName = document.getElementById('playerNameInput').value.trim();
+            if (!playerName) {
+                alert('Entrez un nom!');
+                return;
+            }
+            screenManager.show('mode');
+        }
+
+        function selectMode(mode) {
+            currentMode = mode;
+            document.querySelectorAll('#screen-mode .option-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+        }
+
+        function confirmMode() {
+            if (currentMode === 'SOLO') {
+                screenManager.show('difficulty');
+            } else {
+                screenManager.show('create-arena');
+            }
+        }
+
+        function selectDifficulty(difficulty) {
+            currentDifficulty = difficulty;
+            document.querySelectorAll('#screen-difficulty .option-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+        }
+
+        function startGameplay() {
+            generateSecretCode();
+            screenManager.show('gameplay');
+            loadGameLog();
+        }
+
+        function generateSecretCode() {
+            secretCode = '';
+            for (let i = 0; i < 4; i++) {
+                secretCode += Math.floor(Math.random() * 10);
+            }
+            console.log('🔐 Secret code:', secretCode);
+        }
+
+        function submitGuess() {
+            const guess = document.getElementById('codeGuess').value.trim();
+            if (guess.length !== 4 || !/^\d{4}$/.test(guess)) {
+                alert('Entrez 4 chiffres!');
+                return;
+            }
+
+            const bp = guess.split('').filter((d, i) => d === secretCode[i]).length;
+            const mp = guess.split('').filter(d => secretCode.includes(d)).length - bp;
+
+            attempts.push({ guess, bp, mp });
+            document.getElementById('codeGuess').value = '';
+            loadGameLog();
+
+            if (bp === 4) {
+                setTimeout(() => {
+                    alert(`🎉 Gagné en ${attempts.length} tentatives!`);
+                    if (currentUserId) {
+                        saveRecordToCloud(playerName || 'Anonyme', attempts.length, currentDifficulty);
+                    }
+                    screenManager.show('mode');
+                    attempts = [];
+                }, 100);
+            }
+        }
+
+        function loadGameLog() {
+            const log = document.getElementById('gameLog');
+            log.innerHTML = attempts.map((a, i) => 
+                `<div style="color: #00f2ff; margin: 0.3rem 0;">
+                    ${i+1}. ${a.guess} → ${a.bp}🎯 ${a.mp}📍
+                </div>`
+            ).join('');
+        }
+
+        // ============= ARENE FUNCTIONS =============
+        async function createArena() {
+            if (!currentUserId) {
+                alert('❌ Authentification requise');
+                return;
+            }
+            const arenaName = document.getElementById('arenaPlayerName').value.trim() || playerName;
+            const arenaId = `ARENA-${Math.random().toString(36).substr(2, 6).toUpperCase()}`;
+            const arenaSecretCode = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
+            const now = Date.now();
+
+            try {
+                const { error } = await sb.from('arenas').insert({
+                    id: arenaId,
+                    secret_code: arenaSecretCode,
+                    creator_id: currentUserId,
+                    creator_name: arenaName,
+                    players: [{ id: currentUserId, name: arenaName, platform: PLATFORM, version: APP_VERSION, joinedAt: now }],
+                    status: 'waiting',
+                    created_at_ms: now,
+                    expires_at_ms: now + (5 * 60 * 1000),
+                    last_updated_ms: now,
+                    attempts: []
+                });
+
+                if (error) throw error;
+
+                currentArenaId = arenaId;
+                document.getElementById('arenaCodeDisplay').textContent = `Code: ${arenaId}`;
+                screenManager.show('waiting-room');
+                loadRecords(); // Charger les records en background
+            } catch (error) {
+                alert('❌ Erreur création arène: ' + error.message);
+            }
+        }
+
+        function showJoinArena() {
+            screenManager.show('join-arena');
+        }
+
+        async function joinArena() {
+            if (!currentUserId) {
+                alert('❌ Authentification requise');
+                return;
+            }
+            const code = document.getElementById('arenaCodeInput').value.trim().toUpperCase();
+            const name = document.getElementById('joinPlayerName').value.trim() || playerName;
+
+            if (!code) {
+                alert('Entrez le code!');
+                return;
+            }
+
+            try {
+                const { data: arenaData, error: fetchError } = await sb
+                    .from('arenas')
+                    .select('*')
+                    .eq('id', code)
+                    .maybeSingle();
+
+                if (fetchError || !arenaData) {
+                    alert('❌ Arène non trouvée!');
+                    return;
+                }
+
+                const { error: updateError } = await sb
+                    .from('arenas')
+                    .update({
+                        players: [...(arenaData.players || []), { id: currentUserId, name, platform: PLATFORM, version: APP_VERSION, joinedAt: Date.now() }],
+                        status: 'active',
+                        last_updated_ms: Date.now(),
+                    })
+                    .eq('id', code);
+
+                if (updateError) throw updateError;
+
+                currentArenaId = code;
+                alert(`✅ Connecté à l'arène ${code}!`);
+                screenManager.show('difficulty');
+            } catch (error) {
+                alert('❌ Erreur: ' + error.message);
+            }
+        }
+
+        function copyArenaCode() {
+            const code = document.getElementById('arenaCodeDisplay').textContent.replace('Code: ', '');
+            navigator.clipboard.writeText(code);
+            alert('✅ Code copié!');
+        }
+
+        // ============= CHAT =============
+        function loadChat() {
+            const el = document.getElementById('chatMessages');
+
+            const render = (rows) => {
+                el.innerHTML = rows.map(msg =>
+                    `<div class="message"><div class="message-author">${escapeHtml(msg.agent_name)}</div>${escapeHtml(msg.message)}</div>`
+                ).join('');
+                el.scrollTop = el.scrollHeight;
+            };
+
+            const load = async () => {
+                const { data, error } = await sb
+                    .from('chat_messages')
+                    .select('*')
+                    .order('timestamp_ms', { ascending: false })
+                    .limit(50);
+                if (!error && data) render(data.slice().reverse());
+            };
+
+            load();
+
+            sb.channel('chat_messages_web_complete')
+                .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'chat_messages' }, load)
+                .subscribe();
+        }
+
+        async function sendMessage() {
+            const text = document.getElementById('messageInput').value.trim();
+            if (!text) return;
+            if (!currentUserId) {
+                console.warn('Authentification requise pour envoyer un message');
+                return;
+            }
+            try {
+                const { error } = await sb.from('chat_messages').insert({
+                    agent_name: playerName || 'Anonyme',
+                    creator_id: currentUserId,
+                    message: text,
+                    message_type: 'message',
+                    timestamp_ms: Date.now(),
+                });
+                if (error) throw error;
+                document.getElementById('messageInput').value = '';
+            } catch (error) {
+                console.error('❌ Chat error:', error);
+            }
+        }
+
+        // ============= RECORDS =============
+        async function loadRecords() {
+            try {
+                // Tri par nombre de tentatives (le champ affiché ci-dessous
+                // est "attempts", pas un temps chronométré — ce shell web
+                // n'a pas de minuteur, voir submitGuess()).
+                const { data, error } = await sb
+                    .from('records')
+                    .select('*')
+                    .order('attempts', { ascending: true })
+                    .limit(10);
+
+                if (error) throw error;
+
+                const list = document.getElementById('recordsList');
+                list.innerHTML = (data || []).map((r, i) =>
+                    `<div class="record-item">
+                        ${i+1}. ${escapeHtml(r.agent_name)} - ${r.attempts} tentatives (${escapeHtml(r.difficulty || 'NORMAL')})
+                    </div>`
+                ).join('') || '<p style="color: #b0b0b0;">Pas de records...</p>';
+                console.log('✅ Records chargés');
+            } catch (error) {
+                console.error('❌ Records error:', error);
+            }
+        }
+
+        // ============= SAUVEGARDE DES RECORDS =============
+        // Remplace les deux implémentations Firebase qui coexistaient ici
+        // (Cloud Function `saveGameRecord` + repli direct Firestore) —
+        // celle-ci est maintenant une seule fonction propre, écriture
+        // directe dans la table Supabase `records`.
+        //
+        // ⚠️ Le fichier original contenait ici une erreur de syntaxe
+        // JavaScript bloquante (deux fonctions `saveRecordToCloud` mal
+        // fusionnées, l'une tronquée en plein milieu), qui empêchait tout
+        // le script — donc toute la page — de s'exécuter dans un
+        // navigateur. Corrigé au passage.
+        async function saveRecordToCloud(agentName, attemptsCount, difficulty) {
+            if (!currentUserId) {
+                console.warn('[saveRecordToCloud] Authentification requise, sauvegarde annulée');
+                return false;
+            }
+            try {
+                const { error } = await sb.from('records').insert({
+                    agent_name: agentName,
+                    player_id: currentUserId,
+                    attempts: attemptsCount,
+                    // Ce shell n'a pas de minuteur (voir submitGuess()) ;
+                    // 0 en attendant un vrai suivi du temps si besoin.
+                    time_seconds: 0,
+                    difficulty: difficulty || 'NORMAL',
+                    mode: currentMode,
+                    timestamp_ms: Date.now(),
+                });
+                if (error) throw error;
+
+                console.log('✅ Record sauvegardé:', agentName);
+                loadRecords();
+                return true;
+            } catch (error) {
+                console.error('❌ Erreur sauvegarde record:', error);
+                return false;
+            }
+        }
+
+        // ============= INITIALISATION =============
+        async function bootstrap() {
+            if (SUPABASE_ANON_KEY === 'REMPLACE_PAR_TA_CLE_ANON_SUPABASE') {
+                document.getElementById('status').textContent = '⚠️ Configurer SUPABASE_ANON_KEY dans le code';
+                console.error('⚠️ Renseigne ta clé "anon public" Supabase (Project Settings > API) dans SUPABASE_ANON_KEY avant de déployer ce fichier.');
+                return;
+            }
+            await initAuth();
+            document.getElementById('status').textContent = `✅ Connecté | ${PLATFORM} v${APP_VERSION}`;
+            loadChat();
+
+            document.getElementById('sendBtn').addEventListener('click', sendMessage);
+            document.getElementById('messageInput').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') sendMessage();
+            });
+        }
+
+        bootstrap();
+    </script>
+</body>
+</html>

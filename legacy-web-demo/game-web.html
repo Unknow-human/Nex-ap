@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEXUS ARENA - Jeu Web v1.0.1</title>
+    <!-- Supabase JS SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #050510 0%, #0a0a1a 100%);
+            color: #e0e0e0;
+            overflow-x: hidden;
+        }
+
+        .app-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            background: linear-gradient(135deg, #050510 0%, #0a0a1a 100%);
+        }
+
+        header {
+            background: rgba(10, 10, 26, 0.9);
+            border-bottom: 2px solid #00f2ff;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #00f2ff, #ffa502);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .main-content {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+        }
+
+        .game-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .chat-area {
+            width: 350px;
+            background: rgba(10, 10, 26, 0.8);
+            border-left: 2px solid #00f2ff;
+            display: flex;
+            flex-direction: column;
+            padding: 1rem;
+            overflow: hidden;
+        }
+
+        .game-board {
+            background: rgba(0, 242, 255, 0.1);
+            border: 2px solid #00f2ff;
+            border-radius: 10px;
+            padding: 2rem;
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        .game-title {
+            color: #00f2ff;
+            font-size: 2rem;
+            font-weight: 800;
+            margin-bottom: 1.5rem;
+            text-shadow: 0 0 20px rgba(0, 242, 255, 0.5);
+        }
+
+        .game-code {
+            background: rgba(0, 242, 255, 0.2);
+            border: 1px solid #00f2ff;
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #00f2ff;
+            font-family: monospace;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin: 1.5rem 0;
+        }
+
+        .btn {
+            padding: 0.8rem 1.5rem;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #00f2ff, #00a8cc);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(0, 242, 255, 0.4);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: #00f2ff;
+            border: 2px solid #00f2ff;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(0, 242, 255, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            margin-bottom: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .message {
+            background: rgba(0, 242, 255, 0.1);
+            border-left: 3px solid #00f2ff;
+            padding: 0.75rem;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            word-break: break-word;
+        }
+
+        .message-author {
+            color: #00f2ff;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+
+        .chat-input {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .chat-input input {
+            flex: 1;
+            background: rgba(0, 242, 255, 0.1);
+            border: 1px solid #00f2ff;
+            color: #e0e0e0;
+            padding: 0.75rem;
+            border-radius: 4px;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .chat-input input::placeholder {
+            color: #b0b0b0;
+        }
+
+        .chat-input input:focus {
+            outline: none;
+            box-shadow: 0 0 10px rgba(0, 242, 255, 0.5);
+        }
+
+        .chat-input button {
+            background: #00f2ff;
+            color: #050510;
+            border: none;
+            padding: 0.75rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .chat-input button:hover {
+            background: #00a8cc;
+        }
+
+        .status {
+            text-align: center;
+            padding: 1rem;
+            color: #b0b0b0;
+            font-size: 0.9rem;
+        }
+
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            font-size: 1.2rem;
+            color: #00f2ff;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                flex-direction: column;
+            }
+
+            .chat-area {
+                width: 100%;
+                border-left: none;
+                border-top: 2px solid #00f2ff;
+                max-height: 200px;
+            }
+
+            header {
+                padding: 0.8rem 1rem;
+            }
+
+            .game-title {
+                font-size: 1.5rem;
+            }
+
+            .game-board {
+                padding: 1rem;
+                max-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <header>
+            <div class="logo">⚡ NEXUS ARENA v1.0.1</div>
+            <div id="status" style="font-size: 0.9rem; color: #b0b0b0;">Initialisation...</div>
+        </header>
+
+        <div class="main-content">
+            <div class="game-area">
+                <div class="game-board" id="gameBoard">
+                    <div class="game-title">NEXUS ARENA</div>
+                    <p style="margin-bottom: 1rem; color: #b0b0b0;">Jeu Mastermind Cyberpunk</p>
+
+                    <div id="gameContent">
+                        <div class="loading">
+                            <span>🎮 Chargement...</span>
+                        </div>
+                    </div>
+
+                    <div class="buttons" id="gameButtons">
+                        <button class="btn btn-primary" id="createArena">Créer une Arène</button>
+                        <button class="btn btn-secondary" id="joinArena">Rejoindre</button>
+                    </div>
+
+                    <div class="status" id="gameStatus">Connecté à Supabase ✅</div>
+                </div>
+            </div>
+
+            <div class="chat-area">
+                <h3 style="margin-bottom: 1rem; color: #00f2ff;">💬 Chat Global</h3>
+                <div class="chat-messages" id="chatMessages"></div>
+                <div class="chat-input">
+                    <input type="text" id="messageInput" placeholder="Votre message...">
+                    <button id="sendBtn">Envoyer</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ============================================================
+        // Configuration Supabase (remplace la config Firebase)
+        // ============================================================
+        // URL du projet : publique par nature (c'est juste l'endpoint API),
+        // sans risque à l'embarquer côté client.
+        const SUPABASE_URL = 'https://epvlkpaqaosivcjclztm.supabase.co';
+        // ⚠️ À REMPLACER : Project Settings > API > "anon public" key.
+        // La clé "anon" est conçue pour être exposée côté client (les vraies
+        // règles d'accès sont appliquées par les policies RLS côté serveur,
+        // voir supabase/schema.sql) — ce n'est pas un secret à protéger comme
+        // une clé "service_role".
+        const SUPABASE_ANON_KEY = 'REMPLACE_PAR_TA_CLE_ANON_SUPABASE';
+
+        // `supabase` ici est l'espace de noms global injecté par le script
+        // CDN chargé dans le <head> — pas notre instance de client.
+        const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // Version et état de l'app
+        const APP_VERSION = '1.0.1';
+        const PLATFORM = 'web';
+        let playerName = `Player_${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
+        let currentArenaId = null;
+        let currentUserId = null; // uid Supabase Auth (anonyme)
+        let arenaChatChannel = null;
+
+        // Éléments DOM
+        const statusEl = document.getElementById('status');
+        const chatMessagesEl = document.getElementById('chatMessages');
+        const messageInputEl = document.getElementById('messageInput');
+        const sendBtnEl = document.getElementById('sendBtn');
+        const createArenaBtn = document.getElementById('createArena');
+        const joinArenaBtn = document.getElementById('joinArena');
+
+        // Échappement basique pour ne jamais injecter du HTML venant d'un
+        // autre joueur tel quel dans innerHTML (le code Firestore d'origine
+        // ne le faisait pas non plus — ajout de robustesse au passage).
+        function escapeHtml(str) {
+            const div = document.createElement('div');
+            div.textContent = str ?? '';
+            return div.innerHTML;
+        }
+
+        // S'authentifier anonymement et tracker l'utilisateur
+        // ⚠️ Nécessite que l'auth anonyme soit activée côté Supabase
+        // (Dashboard > Authentication > Providers > Anonymous) — même
+        // prérequis manuel que pour l'app mobile (voir feuille de route).
+        async function initAuth() {
+            const { data, error } = await sb.auth.signInAnonymously();
+            if (error) {
+                console.error('❌ Erreur auth:', error);
+                statusEl.textContent = '❌ Erreur Supabase (auth anonyme désactivée ?)';
+                return;
+            }
+            currentUserId = data.user.id;
+            console.log('✅ Auth anonyme réussie:', currentUserId);
+            console.log(`🌐 Plateforme: ${PLATFORM} v${APP_VERSION}`);
+        }
+
+        // Charger les messages du chat (remplace loadChat() Firestore)
+        function loadChat() {
+            const render = (rows) => {
+                chatMessagesEl.innerHTML = '';
+                rows.forEach((msg) => {
+                    const msgEl = document.createElement('div');
+                    msgEl.className = 'message';
+                    msgEl.innerHTML = `<div class="message-author">${escapeHtml(msg.agent_name)}</div>${escapeHtml(msg.message)}`;
+                    chatMessagesEl.appendChild(msgEl);
+                });
+                chatMessagesEl.scrollTop = chatMessagesEl.scrollHeight;
+            };
+
+            const load = async () => {
+                const { data, error } = await sb
+                    .from('chat_messages')
+                    .select('*')
+                    .order('timestamp_ms', { ascending: false })
+                    .limit(50);
+                if (!error && data) {
+                    render(data.slice().reverse());
+                } else if (error) {
+                    console.error('❌ Erreur chargement chat:', error);
+                }
+            };
+
+            load();
+
+            // Supabase Realtime : pas de payload "delta" utilisable
+            // directement pour un rendu incrémental fiable, donc on
+            // recharge la liste complète à chaque INSERT (même pattern que
+            // le reste de l'app, voir src/services/supabase.ts).
+            sb.channel('chat_messages_web')
+                .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'chat_messages' }, load)
+                .subscribe();
+        }
+
+        // Envoyer un message (remplace sendMessage() Firestore)
+        async function sendMessage() {
+            const text = messageInputEl.value.trim();
+            if (!text) return;
+            if (!currentUserId) {
+                alert('❌ Authentification requise');
+                return;
+            }
+
+            try {
+                const { error } = await sb.from('chat_messages').insert({
+                    agent_name: playerName,
+                    creator_id: currentUserId,
+                    message: text,
+                    message_type: 'message',
+                    timestamp_ms: Date.now(),
+                });
+                if (error) throw error;
+                messageInputEl.value = '';
+            } catch (error) {
+                console.error('Erreur envoi:', error);
+                alert('Erreur lors de l\'envoi du message');
+            }
+        }
+
+        // Créer une arène (remplace createArena() Firestore)
+        async function createArena() {
+            if (!currentUserId) {
+                alert('❌ Authentification requise');
+                return;
+            }
+            try {
+                const arenaId = `ARENA-${Math.random().toString(36).substr(2, 6).toUpperCase()}`;
+                const secretCode = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
+                const now = Date.now();
+                console.log('📝 Création arène:', arenaId);
+
+                const { error } = await sb.from('arenas').insert({
+                    id: arenaId,
+                    secret_code: secretCode,
+                    creator_id: currentUserId,
+                    creator_name: playerName,
+                    players: [{
+                        id: currentUserId,
+                        name: playerName,
+                        platform: PLATFORM,
+                        version: APP_VERSION,
+                        joinedAt: now
+                    }],
+                    status: 'waiting',
+                    created_at_ms: now,
+                    expires_at_ms: now + (5 * 60 * 1000),
+                    last_updated_ms: now,
+                    game_started: false,
+                    attempts: []
+                });
+
+                if (error) throw error;
+
+                // Message système dans le chat de l'arène
+                await sb.from('arena_chat_messages').insert({
+                    arena_id: arenaId,
+                    player_id: currentUserId,
+                    player_name: playerName,
+                    creator_id: currentUserId,
+                    message: `🎮 Arena créée par ${playerName} (${PLATFORM})`,
+                    timestamp_ms: now,
+                });
+
+                currentArenaId = arenaId;
+                console.log('✅ Arène créée:', arenaId);
+                alert(`✅ Arène créée: ${arenaId}\n\nPartagez ce code avec un ami!`);
+                statusEl.textContent = `Arène: ${arenaId} 🎮`;
+                subscribeToArenaChat(arenaId);
+            } catch (error) {
+                console.error('❌ Erreur création arène:', error);
+                alert(`❌ Erreur: ${error.message}\n\nVérifiez la console (F12)`);
+            }
+        }
+
+        // Rejoindre une arène (remplace joinArena() Firestore)
+        async function joinArena() {
+            if (!currentUserId) {
+                alert('❌ Authentification requise');
+                return;
+            }
+            const code = prompt('Entrez le code de l\'arène:');
+            if (!code) return;
+            const arenaId = code.toUpperCase();
+
+            try {
+                console.log('🔍 Recherche arène:', arenaId);
+                const { data: arenaData, error: fetchError } = await sb
+                    .from('arenas')
+                    .select('*')
+                    .eq('id', arenaId)
+                    .maybeSingle();
+
+                if (fetchError || !arenaData) {
+                    console.warn('⚠️ Arène non trouvée:', arenaId);
+                    alert('❌ Arène non trouvée');
+                    return;
+                }
+
+                // Ajouter le joueur à la liste des players
+                const updatedPlayers = [
+                    ...(arenaData.players || []),
+                    {
+                        id: currentUserId,
+                        name: playerName,
+                        platform: PLATFORM,
+                        version: APP_VERSION,
+                        joinedAt: Date.now()
+                    }
+                ];
+
+                const { error: updateError } = await sb
+                    .from('arenas')
+                    .update({
+                        players: updatedPlayers,
+                        status: updatedPlayers.length >= 2 ? 'active' : 'waiting',
+                        last_updated_ms: Date.now(),
+                    })
+                    .eq('id', arenaId);
+
+                if (updateError) throw updateError;
+
+                await sb.from('arena_chat_messages').insert({
+                    arena_id: arenaId,
+                    player_id: currentUserId,
+                    player_name: playerName,
+                    creator_id: currentUserId,
+                    message: `🎮 ${playerName} (${PLATFORM}) a rejoint l'arène`,
+                    timestamp_ms: Date.now(),
+                });
+
+                currentArenaId = arenaId;
+                console.log('✅ Arène rejointe:', arenaData);
+                alert(`✅ Connecté à l'arène: ${currentArenaId}\n${updatedPlayers.length}/2 joueurs`);
+                statusEl.textContent = `Arène: ${currentArenaId} 🎮`;
+                subscribeToArenaChat(currentArenaId);
+            } catch (error) {
+                console.error('❌ Erreur rejoindre arène:', error);
+                alert(`❌ Erreur: ${error.message}`);
+            }
+        }
+
+        // S'abonner aux messages de l'arène (remplace subscribeToArenaChat() Firestore)
+        function subscribeToArenaChat(arenaId) {
+            if (arenaChatChannel) {
+                sb.removeChannel(arenaChatChannel);
+                arenaChatChannel = null;
+            }
+
+            const load = async () => {
+                const { data, error } = await sb
+                    .from('arena_chat_messages')
+                    .select('*')
+                    .eq('arena_id', arenaId)
+                    .order('timestamp_ms', { ascending: true })
+                    .limit(100);
+
+                if (!error && data) {
+                    console.log(`📨 ${data.length} messages dans l'arène`);
+                    console.log('🎮 Messages arène:', data);
+                } else if (error) {
+                    console.error('❌ Erreur chargement chat arène:', error);
+                }
+            };
+
+            load();
+
+            arenaChatChannel = sb
+                .channel(`arena_chat_${arenaId}`)
+                .on(
+                    'postgres_changes',
+                    { event: 'INSERT', schema: 'public', table: 'arena_chat_messages', filter: `arena_id=eq.${arenaId}` },
+                    load
+                )
+                .subscribe();
+        }
+
+        // Charger le top des records (remplace loadRecordsFromCloud() Firestore
+        // — utilise maintenant le RPC get_top_records() défini dans
+        // supabase/schema.sql, qui remplace l'ancienne Cloud Function Firebase)
+        async function loadRecordsFromCloud() {
+            try {
+                const { data, error } = await sb.rpc('get_top_records', { p_limit: 10 });
+                if (error) throw error;
+                console.log('🏆 Top records chargés:', data);
+                return data || [];
+            } catch (error) {
+                console.error('❌ Erreur loadRecordsFromCloud:', error);
+                return [];
+            }
+        }
+
+        // Sauvegarder un record (remplace saveRecordToCloud() Firestore)
+        async function saveRecordToCloud(agentName, time, difficulty, mode = 'SOLO', opponentName = null) {
+            if (!currentUserId) {
+                console.warn('[saveRecordToCloud] Authentification requise, sauvegarde annulée');
+                return false;
+            }
+            try {
+                const { error } = await sb.from('records').insert({
+                    agent_name: agentName,
+                    player_id: currentUserId,
+                    // Ce shell web minimal ne fait pas encore le suivi du
+                    // nombre de tentatives (pas de plateau de jeu complet
+                    // implémenté ici) — 0 en attendant, comme dans la
+                    // version Firestore d'origine qui ne l'envoyait pas non
+                    // plus (mais Postgres exige une valeur non-nulle).
+                    attempts: 0,
+                    time_seconds: time,
+                    difficulty: difficulty || 'NORMAL',
+                    mode: mode,
+                    opponent_name: opponentName || null,
+                    timestamp_ms: Date.now(),
+                });
+                if (error) throw error;
+
+                console.log('✅ Record sauvegardé:', agentName, 'mode:', mode, opponentName ? `vs ${opponentName}` : '');
+                return true;
+            } catch (error) {
+                console.error('❌ Erreur saveRecordToCloud:', error);
+                return false;
+            }
+        }
+
+        // Obtenir les stats globales (remplace loadGlobalStats() Firestore
+        // — utilise le RPC get_global_stats()). Note : le schéma Postgres
+        // migré ne conserve pas de colonne "platform" sur `records` (elle
+        // n'existait que côté web dans Firestore), donc la répartition
+        // "webGames" de l'ancienne version n'est plus calculable telle
+        // quelle — on ne l'invente pas, on l'omet.
+        async function loadGlobalStats() {
+            try {
+                const { data, error } = await sb.rpc('get_global_stats');
+                if (error) throw error;
+                const row = (data && data[0]) || { total_games: 0, average_time: 0 };
+                console.log('📊 Stats globales - Total:', row.total_games);
+                return {
+                    totalGames: row.total_games || 0,
+                    averageTime: row.average_time || 0,
+                    timestamp: new Date().toISOString()
+                };
+            } catch (error) {
+                console.error('❌ Erreur loadGlobalStats:', error);
+                return { totalGames: 0, averageTime: 0, timestamp: new Date().toISOString() };
+            }
+        }
+
+        // Event listeners
+        sendBtnEl.addEventListener('click', sendMessage);
+        messageInputEl.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendMessage();
+        });
+        createArenaBtn.addEventListener('click', createArena);
+        joinArenaBtn.addEventListener('click', joinArena);
+
+        // Initialisation
+        function init() {
+            statusEl.textContent = `👤 ${playerName} | 🌐 ${PLATFORM} v${APP_VERSION} | ✅ Connecté`;
+            loadChat();
+            loadRecordsFromCloud();
+            loadGlobalStats();
+            console.log('%c=== NEXUS ARENA v1.0.1 ===', 'font-size: 16px; color: #00f2ff; font-weight: bold;');
+            console.log(`%cPlateforme: ${PLATFORM}`, 'color: #00f2ff;');
+            console.log(`%cJoueur: ${playerName}`, 'color: #00f2ff;');
+        }
+
+        // Attendre que l'auth anonyme Supabase soit résolue avant de charger
+        // le reste (remplace le setTimeout(init, 1000) qui devinait
+        // simplement que Firebase serait prêt après 1s)
+        async function bootstrap() {
+            if (SUPABASE_ANON_KEY === 'REMPLACE_PAR_TA_CLE_ANON_SUPABASE') {
+                statusEl.textContent = '⚠️ Configurer SUPABASE_ANON_KEY dans le code';
+                console.error('⚠️ Renseigne ta clé "anon public" Supabase (Project Settings > API) dans SUPABASE_ANON_KEY avant de déployer ce fichier.');
+                return;
+            }
+            await initAuth();
+            init();
+            console.log(`%cAuth ID: ${currentUserId}`, 'color: #00f2ff;');
+        }
+
+        bootstrap();
+
+        console.log('%c🎮 NEXUS ARENA - Web Version', 'font-size: 18px; color: #00f2ff; font-weight: bold;');
+        console.log(`%cJoueur: ${playerName}`, 'color: #00f2ff;');
+    </script>
+</body>
+</html>
